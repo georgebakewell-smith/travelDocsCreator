@@ -82,7 +82,7 @@ int main()
 
     while(finish==0){
         dispCurrentMenu(currentMenu);
-        printf("Please Enter an Option\n");
+        printf("Press a to add item, w or s to navigate menu, q to print. Please Enter an Option:\n");
         scanf(" %c", &option);
         switch(option){
             case 'a':
