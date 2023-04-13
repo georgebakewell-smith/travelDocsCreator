@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct traveller addTraveller(char name[30],int age, char phoneNumber[12]);
-struct flight addFlight(char type[9],char depApt[4],char arrApt[4]);
+struct traveller *addTraveller(struct traveller *arr, int *numTravellers, char name[30],int age, char phoneNumber[12]);
+struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char depApt[4], char arrApt[4]);
 
 struct traveller{
     char name[30];
     int age;
     char phoneNumber[12];
 };
+
 struct flight{
     char type[9];
     char depApt[4];
     char arrApt[4];
 };
+
 void dispCurrentMenu(int currentMenu){
     switch(currentMenu){
         case 0:
@@ -30,10 +32,15 @@ void dispCurrentMenu(int currentMenu){
 
 int main()
 {
-    struct traveller t1;
-    struct flight f1;
-    struct traveller t2;
-    struct flight f2;
+    int numTravellers = 0;
+    int numFlights = 0;
+
+
+    //Allocate memory to structure
+    struct traveller *arr = (struct traveller *)malloc(numTravellers*sizeof(struct traveller));
+    struct flight *pF = (struct flight *)malloc(numFlights*sizeof(struct flight));
+
+
     char option;
     int currentMenu = 0, finish = 0;
     while(finish==0){
@@ -44,56 +51,59 @@ int main()
             case 'a':
                 switch(currentMenu){
                 case 0:
-                    t1 = addTraveller("George Bakewell-Smith", 24, "07923108559");
-                    t2 = addTraveller("James Senior", 22, "0792310855");
-                    printf("%s\n",t2.name);
-                    printf("%d\n",t2.age);
-                    printf("%s\n",t2.phoneNumber);
+                    arr = addTraveller(arr,&numTravellers,"George Bakewell-Smith", numTravellers, "07923108559");
+
+                    printf("%s\n",arr[numTravellers-1].name);
+                    printf("%d\n",arr[numTravellers-1].age);
+                    printf("%s\n",arr[numTravellers-1].phoneNumber);
+                    printf("\nNumber of travellers: %d\n\n",numTravellers);
                     break;
+
                 case 1:
-                    f1 = addFlight("Outbound","LHR","PMI");
-                    f2 = addFlight("Inbound","PMI","LHR");
-                    printf("%s->%s\n",f2.depApt,f2.arrApt);
-                    break;
+                    pF = addFlight(pF, &numFlights, "Outbound", "LHR", "PMI");
+                    printf("%s\n",pF[numFlights-1].type);
+                    printf("%s\n",pF[numFlights-1].depApt);
+                    printf("%s\n",pF[numFlights-1].arrApt);
                 }
-                break;
-
-            case 'w':
-                currentMenu -= 1;
-                if(currentMenu==-1){
-                    currentMenu = 1;
-                }
-
                 break;
             case 's':
-                currentMenu +=1;
+                currentMenu += 1;
                 if(currentMenu==2){
                     currentMenu = 0;
                 }
-
                 break;
 
             case 'q':
                 finish = 1;
+                printf("Test");
+                break;
 
             default:
                 printf("Type something correct");
+
         }
     }
+    free(arr);
+    free(pF);
+    printf("\n\n%d",finish);
     return 0;
 }
 
-struct flight addFlight(char type[9],char depApt[4],char arrApt[4]){
-    struct flight f;
-    strcpy(f.type,type);
-    strcpy(f.depApt,depApt);
-    strcpy(f.arrApt,arrApt);
+struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char depApt[4], char arrApt[4]){
+    printf("Test\n");
+    (*numFlights)++;
+    pF = realloc(pF,*numFlights*sizeof(struct flight));
 
-    return f;
+    strcpy(pF[*numFlights-1].type,type);
+    strcpy(pF[*numFlights-1].depApt,depApt);
+    strcpy(pF[*numFlights-1].arrApt,arrApt);
+
+    printf("There are %d flights.\n",*numFlights);
+
+return pF;
 }
 
-struct traveller addTraveller(char name[30],int age, char phoneNumber[12]){
-    struct traveller t;
+struct traveller *addTraveller(struct traveller *arr, int *numTravellers, char name[30],int age, char phoneNumber[12]){
     /*
     int age;
     char name[30];
@@ -108,9 +118,12 @@ struct traveller addTraveller(char name[30],int age, char phoneNumber[12]){
     printf("Enter traveller phone number: \n");
     scanf("%s", t.phoneNumber);*/
 
-    strcpy(t.name,name);
-    strcpy(t.phoneNumber,phoneNumber);
-    t.age = age;
+    *numTravellers += 1;
+    arr = realloc(arr,*numTravellers*sizeof(struct traveller));
 
-    return t;
+    strcpy(arr[*numTravellers-1].name,name);
+    strcpy(arr[*numTravellers-1].phoneNumber,phoneNumber);
+    arr[*numTravellers-1].age = 100*(age+1);
+
+    return arr;
 }
