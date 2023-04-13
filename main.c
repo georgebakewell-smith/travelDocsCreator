@@ -126,7 +126,7 @@ int main()
                 break;
 
             default:
-                printf("Type something correct");
+                printf("Type something correct\n");
 
         }
     }
