@@ -2,9 +2,10 @@
 #include <stdlib.h>
 
 struct traveller *addTraveller(struct traveller *arr, int *numTravellers, char name[30],int age, char phoneNumber[12]);
-struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char depApt[4], char arrApt[4]);
+struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char depApt[4], char arrApt[4], char depTime[5], char arrTime[5], char date[11], char airline[30], char flightNumber[20]);
 struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommodation, char name[30], char address[100], char dateCI[11], char dateCO[11]);
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, int numTravellers, int numFlights, int numAccommodation);
+struct insurance *addInsurance(struct insurance *pI, int *numInsurance, char name[30], char reference[30], char number [30]);
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
 
 struct traveller{
     char name[30];
@@ -16,6 +17,11 @@ struct flight{
     char type[9];
     char depApt[4];
     char arrApt[4];
+    char depTime[5];
+    char arrTime[5];
+    char date[11];
+    char airline[30];
+    char flightNumber[20];
 };
 
 struct accommodation{
@@ -25,21 +31,32 @@ struct accommodation{
     char dateCO[11];
 };
 
+struct insurance{
+    char name[30];
+    char reference[30];
+    char number[12];
+};
+
 
 
 void dispCurrentMenu(int currentMenu){
     switch(currentMenu){
         case 0:
             printf("Travellers\n");
-            printf("-----------\n\n");
+            printf("-------------------\n\n");
             break;
         case 1:
             printf("Flights\n");
-            printf("-----------\n\n");
+            printf("-------------------\n\n");
             break;
         case 2:
             printf("Accommodation\n");
-            printf("-----------\n\n");
+            printf("-------------------\n\n");
+            break;
+        case 3:
+            printf("Travel Insurance\n");
+            printf("-------------------\n\n");
+            break;
     }
 
 }
@@ -49,12 +66,14 @@ int main()
     int numTravellers = 0;
     int numFlights = 0;
     int numAccommodation = 0;
+    int numInsurance = 0;
 
 
-    //Allocate memory to structure
+    //Allocate memory to structurs
     struct traveller *arr = (struct traveller *)malloc(numTravellers*sizeof(struct traveller));
     struct flight *pF = (struct flight *)malloc(numFlights*sizeof(struct flight));
     struct accommodation *pA = (struct accommodation *)malloc(numAccommodation*sizeof(struct accommodation));
+    struct insurance *pI = (struct insurance *)malloc(numInsurance*sizeof(struct insurance));
 
 
     char option;
@@ -77,7 +96,7 @@ int main()
                     break;
 
                 case 1:
-                    pF = addFlight(pF, &numFlights, "Outbound", "LHR", "PMI");
+                    pF = addFlight(pF, &numFlights, "Outbound", "LHR", "PMI", "0100", "0400", "31/10/1998", "British Airways", "BA1234567");
                     printf("%s\n",pF[numFlights-1].type);
                     printf("%s\n",pF[numFlights-1].depApt);
                     printf("%s\n",pF[numFlights-1].arrApt);
@@ -88,17 +107,23 @@ int main()
                     printf("%s\n",pA[numAccommodation-1].address);
                     printf("%s - %s\n",pA[numAccommodation-1].dateCI, pA[numAccommodation-1].dateCO);
                     break;
+                case 3:
+                    pI = addInsurance(pI, &numInsurance, "Golden Insurance", "GI1324fc", "01234567891");
+                    printf("%s\n",pI[numInsurance-1].name);
+                    printf("%s\n",pI[numInsurance-1].reference);
+                    printf("%s\n",pI[numInsurance-1].number);
+                    break;
                 }
                 break;
             case 'w':
                 currentMenu -= 1;
                 if(currentMenu==-1){
-                    currentMenu = 2;
+                    currentMenu = 3;
                 }
                 break;
             case 's':
                 currentMenu += 1;
-                if(currentMenu==3){
+                if(currentMenu==4){
                     currentMenu = 0;
                 }
                 break;
@@ -113,14 +138,14 @@ int main()
 
         }
     }
-    createDoc(arr, pF, pA, numTravellers, numFlights, numAccommodation);
+    createDoc(arr, pF, pA, pI, numTravellers, numFlights, numAccommodation, numInsurance);
     free(arr);
     free(pF);
 
     return 0;
 }
 
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, int numTravellers, int numFlights, int numAccommodation){
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance){
     FILE *fp;
     fp = fopen("output.txt", "w"); // open the file in write mode
 
@@ -131,34 +156,55 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
 
     //Travellers
     fprintf(fp, "Travellers\n");
-    fprintf(fp, "-----------\n");
+    fprintf(fp, "-------------------\n");
+    fprintf(fp, "%-30s%-6s%-12s\n\n", "Name", "Age", "Phone Number");
     for(int i=0;i<numTravellers;i++){
-        fprintf(fp, "%s\t", pT[i].name); // write the string to the file
-        fprintf(fp, "%d\t", pT[i].age);
-        fprintf(fp, "%s\t\n", pT[i].phoneNumber);
+        fprintf(fp, "%-30s%-6d%-12s\n", pT[i].name, pT[i].age,pT[i].phoneNumber); // write the string to the file
+
     }
     fprintf(fp, "\n");
 
     //Flights
     fprintf(fp, "Flights\n");
-    fprintf(fp, "-----------\n");
+    fprintf(fp, "-------------------\n");
+    fprintf(fp,"%-11s%-11s%-13s%-13s%-30s%-20s\n\n","Type", "Airport", "Time", "Date", "Airline", "Flight Number");
     for(int i=0;i<numFlights;i++){
-        fprintf(fp, "%s\t", pF[i].type); // write the string to the file
-        fprintf(fp, "%s\->%s\n", pF[i].depApt,pF[i].arrApt);
+        fprintf(fp, "%-11s%s->%-6s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, pF[i].depApt,pF[i].arrApt, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
     }
     fprintf(fp, "\n");
 
     //Accommodation
     fprintf(fp, "Accommodation\n");
-    fprintf(fp, "-----------\n");
+    fprintf(fp, "-------------------\n");
     for(int i=0;i<numAccommodation;i++){
         fprintf(fp, "%s\n", pA[i].name); // write the string to the file
         fprintf(fp, "%s\n", pA[i].address);
         fprintf(fp,"%s - %s\n\n", pA[i].dateCI, pA[i].dateCO);
     }
 
+    //Travel Insurance
+    fprintf(fp, "Travel Insurance\n");
+    fprintf(fp, "-------------------\n");
+    fprintf(fp,"%-30s%-30s%-25s\n\n","Name", "Reference Number", "Emergency Contact Number");
+    for(int i=0;i<numInsurance;i++){
+        fprintf(fp,"%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
+        //fprintf(fp, "%s\t", pI[i].name); // write the string to the file
+        //fprintf(fp, "%s\t", pI[i].reference);
+        //fprintf(fp,"%s\n", pI[i].number);
+    }
+
     fclose(fp);
 
+}
+
+struct insurance *addInsurance(struct insurance *pI, int *numInsurance, char name[30], char reference[30], char number [30]){
+    (*numInsurance)++;
+    pI = realloc(pI,*numInsurance*sizeof(struct insurance));
+    strcpy(pI[*numInsurance-1].name,name);
+    strcpy(pI[*numInsurance-1].reference,reference);
+    strcpy(pI[*numInsurance-1].number,number);
+
+    return pI;
 }
 
 struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommodation, char name[30], char address[100], char dateCI[11], char dateCO[11]){
@@ -176,7 +222,7 @@ struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommo
 
     return pA;
 }
-struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char depApt[4], char arrApt[4]){
+struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char depApt[4], char arrApt[4], char depTime[5], char arrTime[5],char date[11], char airline[30], char flightNumber[20]){
 
     (*numFlights)++;
     pF = realloc(pF,*numFlights*sizeof(struct flight));
@@ -184,6 +230,11 @@ struct flight *addFlight(struct flight *pF, int *numFlights, char type[9], char 
     strcpy(pF[*numFlights-1].type,type);
     strcpy(pF[*numFlights-1].depApt,depApt);
     strcpy(pF[*numFlights-1].arrApt,arrApt);
+    strcpy(pF[*numFlights-1].depTime,depTime);
+    strcpy(pF[*numFlights-1].arrTime,arrTime);
+    strcpy(pF[*numFlights-1].date,date);
+    strcpy(pF[*numFlights-1].airline,airline);
+    strcpy(pF[*numFlights-1].flightNumber,flightNumber);
 
     printf("There are %d flights.\n",*numFlights);
 
@@ -205,7 +256,7 @@ struct traveller *addTraveller(struct traveller *arr, int *numTravellers, char n
     printf("Enter traveller phone number: \n");
     scanf("%s", t.phoneNumber);*/
 
-    *numTravellers += 1;
+    (*numTravellers)++;
     arr = realloc(arr,*numTravellers*sizeof(struct traveller));
 
     strcpy(arr[*numTravellers-1].name,name);
