@@ -11,7 +11,7 @@ int length(char *arr);
 struct traveller{
     char name[30];
     int age;
-    char phoneNumber[12];
+    char phoneNumber[18];
 };
 
 struct flight{
@@ -35,7 +35,7 @@ struct accommodation{
 struct insurance{
     char name[30];
     char reference[30];
-    char number[12];
+    char number[18];
 };
 
 
@@ -162,7 +162,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
     fprintf(fp, "-------------------\n");
     fprintf(fp, "%-30s%-6s%-12s\n\n", "Name", "Age", "Phone Number");
     for(int i=0;i<numTravellers;i++){
-        fprintf(fp, "%-30s%-6d%-12s\n", pT[i].name, pT[i].age,pT[i].phoneNumber); // write the string to the file
+        fprintf(fp, "%-30s%-6d%-18s\n", pT[i].name, pT[i].age,pT[i].phoneNumber); // write the string to the file
 
     }
     fprintf(fp, "\n");
@@ -188,7 +188,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
     //Travel Insurance
     fprintf(fp, "Travel Insurance\n");
     fprintf(fp, "-------------------\n");
-    fprintf(fp,"%-30s%-30s%-25s\n\n","Name", "Reference Number", "Emergency Contact Number");
+    fprintf(fp,"%-30s%-30s%-25s\n\n","Name", "Policy Number", "Emergency Contact Number");
     for(int i=0;i<numInsurance;i++){
         fprintf(fp,"%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
         //fprintf(fp, "%s\t", pI[i].name); // write the string to the file
@@ -210,9 +210,9 @@ struct insurance *addInsurance(struct insurance *pI, int *numInsurance){
     // Read the name string
     fgets(pI[*numInsurance-1].name, 30, stdin);
     pI[*numInsurance-1].name[length(pI[*numInsurance-1].name)] = '\0';  //Replace '\n' with terminator '\0'
-    printf("Enter Reference Number:\n");
+    printf("Enter Policy Number:\n");
     scanf(" %s", pI[*numInsurance-1].reference);
-    printf("Enter an Emergency Contact Number for the Insurance Company");
+    printf("Enter an Emergency Contact Number for the Insurance Company:\n");
     scanf(" %s", pI[*numInsurance-1].number);
 
     return pI;
