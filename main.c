@@ -30,8 +30,8 @@ struct traveller{
 
 struct flight{
     char type[13];
-    char depApt[4];
-    char arrApt[4];
+    char depApt[5];
+    char arrApt[5];
     char depTime[5];
     char arrTime[5];
     char date[11];
@@ -291,10 +291,24 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     scanf(" %s",pF[*numFlights-1].type);
     printf("Departing Airport\n");
     searchAirport(airports, selectedAirport, numAirports);
-    strcpy(pF[*numFlights-1].depApt,selectedAirport->code);
+    if(strcmp(selectedAirport->code,"\\N")==0){
+        strcpy(pF[*numFlights-1].depApt,selectedAirport->code2);
+
+    }else{
+        strcpy(pF[*numFlights-1].depApt,selectedAirport->code);
+    }
     printf("Destination Airport\n");
     searchAirport(airports, selectedAirport, numAirports);
-    strcpy(pF[*numFlights-1].arrApt,selectedAirport->code);
+    printf("You chose: %s\n",selectedAirport->code);
+
+    if(strcmp(selectedAirport->code,"\\N")==0){
+        strcpy(pF[*numFlights-1].arrApt,selectedAirport->code2);
+
+    }else{
+        strcpy(pF[*numFlights-1].arrApt,selectedAirport->code);
+    }
+
+
     printf("Enter Takeoff Time:\n");
     scanf(" %s",pF[*numFlights-1].depTime);
     printf("Enter Landing Time:\n");
@@ -304,7 +318,7 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     printf("Enter Airline: \n");
     int c;
     while ((c = getchar()) != '\n' && c != EOF){ }
-    // Read the name string
+    //Read the name string
     fgets(pF[*numFlights-1].airline, 30, stdin);
     pF[*numFlights-1].airline[length(pF[*numFlights-1].airline)] = '\0';  //Replace '\n' with terminator '\0'
     printf("Enter Flight Number:\n");
