@@ -30,8 +30,8 @@ struct traveller{
 
 struct flight{
     char type[13];
-    char depApt[5];
-    char arrApt[5];
+    char depApt[44];
+    char arrApt[44];
     char depTime[5];
     char arrTime[5];
     char date[11];
@@ -153,7 +153,8 @@ int length(char *arr){
 }
 
 void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance){
-//Travellers
+    char airportNames[93];
+    //Travellers
     printf("Travellers\n");
     printf("-------------------\n");
     printf("%-30s%-6s%-12s\n\n", "Name", "Age", "Phone Number");
@@ -166,9 +167,10 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
     //Flights
     printf("Flights\n");
     printf("-------------------\n");
-    printf("%-14s%-11s%-13s%-13s%-30s%-20s\n\n","Type", "Airport", "Time", "Date", "Airline", "Flight Number");
+    printf("%-14s%-93s%-13s%-13s%-30s%-20s\n\n","Type", "Airport", "Time", "Date", "Airline", "Flight Number");
     for(int i=0;i<numFlights;i++){
-        printf("%-14s%s->%-6s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, pF[i].depApt,pF[i].arrApt, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
+        sprintf(airportNames,"%s -> %s",pF[i].depApt,pF[i].arrApt);
+        printf("%-14s%-93s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, airportNames, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
     }
     printf("\n");
 
@@ -193,6 +195,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
 
 void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance){
     FILE *fp;
+    char airportNames[93];
     fp = fopen("output.txt", "w"); // open the file in write mode
 
     if (fp == NULL) { // error checking
@@ -212,9 +215,10 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
     //Flights
     fprintf(fp, "Flights\n");
     fprintf(fp, "-------------------\n");
-    fprintf(fp,"%-14s%-11s%-13s%-13s%-30s%-20s\n\n","Type", "Airport", "Time", "Date", "Airline", "Flight Number");
+    fprintf(fp,"%-14s%-93s%-13s%-13s%-30s%-20s\n\n","Type", "Airport", "Time", "Date", "Airline", "Flight Number");
     for(int i=0;i<numFlights;i++){
-        fprintf(fp, "%-14s%s->%-6s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, pF[i].depApt,pF[i].arrApt, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
+        sprintf(airportNames,"%s -> %s",pF[i].depApt,pF[i].arrApt);
+        fprintf(fp, "%-14s%-93s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, airportNames, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
     }
     fprintf(fp, "\n");
 
@@ -292,20 +296,24 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     printf("Departing Airport\n");
     searchAirport(airports, selectedAirport, numAirports);
     if(strcmp(selectedAirport->code,"\\N")==0){
-        strcpy(pF[*numFlights-1].depApt,selectedAirport->code2);
+        sprintf(pF[*numFlights-1].depApt,"%s (%s)",selectedAirport->name,selectedAirport->code2);
+        //strcpy(pF[*numFlights-1].depApt,selectedAirport->code2);
 
     }else{
-        strcpy(pF[*numFlights-1].depApt,selectedAirport->code);
+        sprintf(pF[*numFlights-1].depApt,"%s (%s)",selectedAirport->name,selectedAirport->code);
+        //strcpy(pF[*numFlights-1].depApt,selectedAirport->code);
     }
     printf("Destination Airport\n");
     searchAirport(airports, selectedAirport, numAirports);
     printf("You chose: %s\n",selectedAirport->code);
 
     if(strcmp(selectedAirport->code,"\\N")==0){
-        strcpy(pF[*numFlights-1].arrApt,selectedAirport->code2);
+        sprintf(pF[*numFlights-1].arrApt,"%s (%s)",selectedAirport->name,selectedAirport->code2);
+        //strcpy(pF[*numFlights-1].arrApt,selectedAirport->code2);
 
     }else{
-        strcpy(pF[*numFlights-1].arrApt,selectedAirport->code);
+        sprintf(pF[*numFlights-1].arrApt,"%s (%s)",selectedAirport->name,selectedAirport->code);
+        //strcpy(pF[*numFlights-1].arrApt,selectedAirport->code);
     }
 
 
