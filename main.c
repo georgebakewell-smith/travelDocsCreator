@@ -15,8 +15,8 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
 int length(char *arr);
 
 struct Airport {
-    char name[200];
-    char city[200];
+    char name[60];
+    char city[40];
     char country[200];
     char code[10];
     char code2[10];
@@ -297,25 +297,17 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     searchAirport(airports, selectedAirport, numAirports);
     if(strcmp(selectedAirport->code,"\\N")==0){
         sprintf(pF[*numFlights-1].depApt,"%s (%s)",selectedAirport->name,selectedAirport->code2);
-        //strcpy(pF[*numFlights-1].depApt,selectedAirport->code2);
-
     }else{
         sprintf(pF[*numFlights-1].depApt,"%s (%s)",selectedAirport->name,selectedAirport->code);
-        //strcpy(pF[*numFlights-1].depApt,selectedAirport->code);
     }
     printf("Destination Airport\n");
     searchAirport(airports, selectedAirport, numAirports);
-    printf("You chose: %s\n",selectedAirport->code);
 
     if(strcmp(selectedAirport->code,"\\N")==0){
         sprintf(pF[*numFlights-1].arrApt,"%s (%s)",selectedAirport->name,selectedAirport->code2);
-        //strcpy(pF[*numFlights-1].arrApt,selectedAirport->code2);
-
     }else{
         sprintf(pF[*numFlights-1].arrApt,"%s (%s)",selectedAirport->name,selectedAirport->code);
-        //strcpy(pF[*numFlights-1].arrApt,selectedAirport->code);
     }
-
 
     printf("Enter Takeoff Time:\n");
     scanf(" %s",pF[*numFlights-1].depTime);
@@ -381,7 +373,7 @@ void loadData(struct Airport *airports, int numAirports){
 struct Airport *linePrint(char line[],FILE *fp, struct Airport *airports, int i){
     //Takes in a line, separates into tokens, prints only the chosen tokens onto line in a new file
     char *token;
-    char name[200], city[200], country[200], code[10], code2[10];
+    char name[60], city[40], country[200], code[10], code2[10];
     int tokenIndex = 0;
 
     token = strtok(line, "\t\"");   //Split string into tokens separated by ','
@@ -416,36 +408,47 @@ struct Airport *linePrint(char line[],FILE *fp, struct Airport *airports, int i)
 
 void searchAirport(struct Airport *airports, struct Airport *selectedAirport, int numAirports){
 
-    char inpCity[4];
-    int airportCount = 0, airportSelection;
+    char inpCity[40], input[10], menuDisplayLine[64];
+    int airportCount = 0, satisfied = 0, airportSelection, inpCityLength;
     int *airportIndexArray = (int*)malloc((airportCount)*sizeof(int));
-    printf("Enter First Three Letters of City/Region\n");
-    scanf(" %s",inpCity);
 
-    for(int i=0;i<numAirports;i++){
+    while(satisfied != 1){
 
-        if(strncmp(inpCity,airports[i].city,3)==0){
-            airportCount++;
-            airportIndexArray = realloc(airportIndexArray,airportCount*sizeof(int));
-            airportIndexArray[airportCount-1] = i;
-            printf("%d) %s\n",airportCount,airports[i].name,i);
+        while (getchar() != '\n') {}
+        printf("Enter some letters of City/Region\n");
+        fgets(inpCity,40,stdin);
+        inpCity[length(inpCity)] = '\0';
+        inpCityLength = strlen(inpCity);
+        for(int i=0;i<numAirports;i++){
 
+            if(strncmp(inpCity,airports[i].city,inpCityLength)==0){
+                airportCount++;
+                airportIndexArray = realloc(airportIndexArray,airportCount*sizeof(int));
+                airportIndexArray[airportCount-1] = i;
+                sprintf(menuDisplayLine,"%d) %s",airportCount,airports[i].name);
+                printf("%-64s-\t%s, %s\n",menuDisplayLine, airports[i].city, airports[i].country);
+
+            }
         }
-    }
-    while(1){
+        while(1){
 
-        printf("Enter the number corresponding to your chosen airport:\n");
-        scanf(" %d", &airportSelection);
-        if(airportSelection <= airportCount && airportSelection > 0){
-            memcpy(selectedAirport, &airports[airportIndexArray[airportSelection-1]], sizeof(struct Airport));
-            printf("You chose: %s\n",selectedAirport->name);
-            break;
-        }else{
-            printf("Please enter a valid number.\n");
+            printf("Enter the number corresponding to your chosen airport, or 0 to search a different region:\n");
+            scanf(" %d", &airportSelection);
+            if(airportSelection <= airportCount && airportSelection > 0){
+                memcpy(selectedAirport, &airports[airportIndexArray[airportSelection-1]], sizeof(struct Airport));
+                printf("You chose: %s\n",selectedAirport->name);
+                satisfied = 1;
+                break;
+            }else if(airportSelection == 0){
+                break;
+            }
+            else{
+                printf("Please enter a valid number.\n");
+                while (getchar() != '\n') {}
+            }
         }
+        airportCount = 0;
     }
-
-
 
     free(airportIndexArray);
 
