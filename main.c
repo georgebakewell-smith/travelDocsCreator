@@ -411,11 +411,11 @@ void searchAirport(struct Airport *airports, struct Airport *selectedAirport, in
     char inpCity[40], input[10], menuDisplayLine[64];
     int airportCount = 0, satisfied = 0, airportSelection, inpCityLength;
     int *airportIndexArray = (int*)malloc((airportCount)*sizeof(int));
-
+    while (getchar() != '\n') {}
     while(satisfied != 1){
 
-        while (getchar() != '\n') {}
         printf("Enter some letters of City/Region\n");
+
         fgets(inpCity,40,stdin);
         inpCity[length(inpCity)] = '\0';
         inpCityLength = strlen(inpCity);
@@ -430,10 +430,14 @@ void searchAirport(struct Airport *airports, struct Airport *selectedAirport, in
 
             }
         }
-        while(1){
+        if(airportCount==0){
+            printf("Sorry, no airports were found associated with that place.\n");
+        }
+        while(airportCount>0){
 
             printf("Enter the number corresponding to your chosen airport, or 0 to search a different region:\n");
             scanf(" %d", &airportSelection);
+            while (getchar() != '\n') {}
             if(airportSelection <= airportCount && airportSelection > 0){
                 memcpy(selectedAirport, &airports[airportIndexArray[airportSelection-1]], sizeof(struct Airport));
                 printf("You chose: %s\n",selectedAirport->name);
