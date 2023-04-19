@@ -62,7 +62,7 @@ int main()
 
 
 
-    //Allocate memory to structurs
+    //Allocate memory to structures
     struct traveller *pT = (struct traveller *)malloc(numTravellers*sizeof(struct traveller));
     struct flight *pF = (struct flight *)malloc(numFlights*sizeof(struct flight));
     struct accommodation *pA = (struct accommodation *)malloc(numAccommodation*sizeof(struct accommodation));
@@ -86,21 +86,18 @@ int main()
                 switch(currentMenu){
                 case 0:
                     pT = addTraveller(pT,&numTravellers);
-                    system("cls");
                     break;
                 case 1:
                     pF = addFlight(pF, &numFlights, airports, numAirports);
-                    system("cls");
                     break;
                 case 2:
                     pA = addAccommodation(pA, &numAccommodation);
-                    system("cls");
                     break;
                 case 3:
                     pI = addInsurance(pI, &numInsurance);
-                    system("cls");
                     break;
                 }
+                system("cls");
                 break;
             case 'w':
                 currentMenu -= 1;
@@ -129,7 +126,7 @@ int main()
                 break;
 
             default:
-                printf("Type something correct\n");
+                printf("Type one of the above options.\n");
 
         }
     }
