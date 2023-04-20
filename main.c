@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 struct Airport *linePrint(char line[],FILE *fp, struct Airport *airports, int i);
@@ -72,7 +73,6 @@ int main()
 
     char option, dum;
     int currentMenu = 0, finish = 0;
-
 
     loadData(airports,numAirports);
 
@@ -355,7 +355,7 @@ void loadData(struct Airport *airports, int numAirports){
     fp = fopen(filename, "r");
     if (fp == NULL) {
         printf("Error opening file %s\n", filename);
-        return 1;
+        exit(1);
     }
 
     for(int i=0;i<numAirports;i++){
