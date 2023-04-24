@@ -15,6 +15,25 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
 void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
 int length(char *arr);
 
+void allocateDays(struct flight*pF, struct accommodation *pA, int numFlights, int numAccommodation);
+struct Date {
+    int year;
+    int month;
+    int day;
+};
+void day2Date(char inpDate[], struct Date *date);
+//Itinerary
+/*
+day 1 - 23/10/2023
+flight EMA->PMI
+Check In at Test Hotel
+Activity 1
+day 2...
+
+*/
+
+
+
 struct Airport {
     char name[60];
     char city[40];
@@ -38,6 +57,7 @@ struct flight{
     char date[11];
     char airline[30];
     char flightNumber[20];
+    int day;
 };
 
 struct accommodation{
@@ -45,6 +65,8 @@ struct accommodation{
     char name [30];
     char dateCI[11];
     char dateCO[11];
+    int dayCI;
+    int dayCO;
 };
 
 struct insurance{
@@ -69,7 +91,7 @@ int main()
     struct accommodation *pA = (struct accommodation *)malloc(numAccommodation*sizeof(struct accommodation));
     struct insurance *pI = (struct insurance *)malloc(numInsurance*sizeof(struct insurance));
     struct Airport *airports = (struct Airport*)malloc(numAirports*sizeof(struct Airport));
-
+    struct Date *testDate = (struct Date*)malloc(sizeof(struct Date));  //For testing
 
     char option, dum;
     int currentMenu = 0, finish = 0;
@@ -78,7 +100,8 @@ int main()
 
 
     while(finish==0){
-        dispCurrentMenu(currentMenu);
+        dispCurrentMenu(currentMenu);day2Date("03/12/1998", testDate);  //For testing
+
         printf("Press a to add item, w or s to navigate menu, p to print preview, q to print. Please Enter an Option:\n");
         scanf(" %c", &option);
         switch(option){
@@ -138,6 +161,34 @@ int main()
     free(airports);
 
     return 0;
+}
+
+void day2Date(char inpDate[], struct Date *date){
+    int testNum = atoi("1234");
+    char yearStr[5];
+    char monthStr[3];
+    char dayStr[3];
+    yearStr[4] = '\0', monthStr[2] = '\0', dayStr[2] = '\0';
+    int year;
+    int month;
+    int day;
+
+    for(int i=0;i<2;i++){
+        dayStr[i] = inpDate[i];
+        monthStr[i] = inpDate[i+3];
+        yearStr[i] = inpDate[i+6];
+    }
+    yearStr[2] = inpDate[8];yearStr[3] = inpDate[9];
+
+    date->year = atoi(yearStr);
+    date->month = atoi(monthStr);
+    date->day = atoi(dayStr);
+
+}
+
+void allocateDays(struct flight *pF, struct accommodation *pA, int numFlights, int numAccommodation){
+    //Assign each event to a particular day of the trip
+    printf("Test");
 }
 
 int length(char *arr){
