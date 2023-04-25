@@ -8,19 +8,20 @@ void loadData(struct Airport *airports, int numAirports);
 void searchAirport(struct Airport *airports, struct Airport *selectedAirport, int numAirports);
 void dispCurrentMenu(int currentMenu);
 struct traveller *addTraveller(struct traveller *pT, int *numTravellers);
-struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *airports, int numAirports);
-struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommodation);
+struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *airports, int numAirports, int *eventID);
+struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommodation, int *eventID);
 struct insurance *addInsurance(struct insurance *pI, int *numInsurance);
-void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
-int length(char *arr);
-
-void allocateDays(struct flight*pF, struct accommodation *pA, int numFlights, int numAccommodation);
 struct Date {
     int year;
     int month;
     int day;
 };
+void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates);
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
+int length(char *arr);
+
+struct Date *allocateDays(struct flight*pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates);
+
 void day2Date(char inpDate[], struct Date *date);
 //Itinerary
 /*
@@ -58,6 +59,7 @@ struct flight{
     char airline[30];
     char flightNumber[20];
     int day;
+    int tag;
 };
 
 struct accommodation{
@@ -67,6 +69,7 @@ struct accommodation{
     char dateCO[11];
     int dayCI;
     int dayCO;
+    int tag;
 };
 
 struct insurance{
@@ -82,7 +85,7 @@ int main()
     int numAccommodation = 0;
     int numInsurance = 0;
     int numAirports = 7698; //Numbers in data file are not complete, skips many numbers
-
+    int eventID = 0;
 
 
     //Allocate memory to structures
@@ -91,7 +94,7 @@ int main()
     struct accommodation *pA = (struct accommodation *)malloc(numAccommodation*sizeof(struct accommodation));
     struct insurance *pI = (struct insurance *)malloc(numInsurance*sizeof(struct insurance));
     struct Airport *airports = (struct Airport*)malloc(numAirports*sizeof(struct Airport));
-    struct Date *testDate = (struct Date*)malloc(sizeof(struct Date));  //For testing
+    struct Date *dates = NULL;
 
     char option, dum;
     int currentMenu = 0, finish = 0;
@@ -100,8 +103,9 @@ int main()
 
 
     while(finish==0){
-        dispCurrentMenu(currentMenu);day2Date("03/12/1998", testDate);  //For testing
 
+        dispCurrentMenu(currentMenu);//day2Date("03/12/1998", dates);  //For testing
+        printf("%d\n",eventID);
         printf("Press a to add item, w or s to navigate menu, p to print preview, q to print. Please Enter an Option:\n");
         scanf(" %c", &option);
         switch(option){
@@ -111,10 +115,10 @@ int main()
                     pT = addTraveller(pT,&numTravellers);
                     break;
                 case 1:
-                    pF = addFlight(pF, &numFlights, airports, numAirports);
+                    pF = addFlight(pF, &numFlights, airports, numAirports, &eventID);
                     break;
                 case 2:
-                    pA = addAccommodation(pA, &numAccommodation);
+                    pA = addAccommodation(pA, &numAccommodation, &eventID);
                     break;
                 case 3:
                     pI = addInsurance(pI, &numInsurance);
@@ -138,7 +142,8 @@ int main()
                 break;
             case 'p':
                 system("cls");
-                printPreview(pT, pF, pA, pI, numTravellers, numFlights, numAccommodation, numInsurance);
+                dates = allocateDays(pF,pA,numFlights,numAccommodation,dates);
+                printPreview(pT, pF, pA, pI, numTravellers, numFlights, numAccommodation, numInsurance, dates);
                 printf("\n\nEnter any character to continue:\n");
                 scanf(" %c",&dum);
                 break;
@@ -159,6 +164,7 @@ int main()
     free(pA);
     free(pI);
     free(airports);
+
 
     return 0;
 }
@@ -186,9 +192,23 @@ void day2Date(char inpDate[], struct Date *date){
 
 }
 
-void allocateDays(struct flight *pF, struct accommodation *pA, int numFlights, int numAccommodation){
+struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates){
     //Assign each event to a particular day of the trip
-    printf("Test");
+    int numEvents = numFlights + numAccommodation;
+    if(dates != NULL && numEvents>0){
+        printf("Reallocate dates\n");
+        dates = (struct Date*)realloc(dates,numEvents*sizeof(struct Date));
+    } else if(dates == NULL){
+        printf("Allocate dates\n");
+        dates = (struct Date*)malloc(numEvents*sizeof(struct Date));
+    }
+
+    if(numEvents > 0){
+
+    }
+
+
+    return dates;
 }
 
 int length(char *arr){
@@ -200,7 +220,7 @@ int length(char *arr){
     return len;
 }
 
-void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance){
+void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates){
     char airportNames[93];
     //Travellers
     printf("Travellers\n");
@@ -238,6 +258,10 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
     for(int i=0;i<numInsurance;i++){
         printf("%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
     }
+
+    //Itinerary
+    printf("Itinerary\n");
+    printf("-------------------\n");
 
 }
 
@@ -309,7 +333,7 @@ struct insurance *addInsurance(struct insurance *pI, int *numInsurance){
     return pI;
 }
 
-struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommodation){
+struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommodation, int *eventID){
 
     (*numAccommodation)++;
     pA = realloc(pA,*numAccommodation*sizeof(struct accommodation));
@@ -332,9 +356,12 @@ struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommo
     printf("Enter Check Out Date:\n");
     scanf(" %s",pA[*numAccommodation-1].dateCO);
 
+    (*eventID)++;
+    pA[*numAccommodation-1].tag = eventID;
+
     return pA;
 }
-struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *airports, int numAirports){
+struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *airports, int numAirports, int *eventID){
     struct Airport *selectedAirport = (struct Airport*)malloc(sizeof(struct Airport));
 
     (*numFlights)++;
@@ -373,6 +400,8 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     scanf(" %s",pF[*numFlights-1].flightNumber);
 
     free(selectedAirport);
+    (*eventID)++;
+    pF[*numFlights-1].tag = eventID;
 
     return pF;
 }
