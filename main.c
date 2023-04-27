@@ -15,6 +15,8 @@ struct Date {
     int year;
     int month;
     int day;
+    int dateConcat;
+    int eventID;
 };
 void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates);
 void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
@@ -70,6 +72,7 @@ struct accommodation{
     int dayCI;
     int dayCO;
     int tag;
+
 };
 
 struct insurance{
@@ -171,6 +174,7 @@ int main()
 
 void day2Date(char inpDate[], struct Date *date){
     int testNum = atoi("1234");
+    char dateConcat[9];
     char yearStr[5];
     char monthStr[3];
     char dayStr[3];
@@ -185,16 +189,17 @@ void day2Date(char inpDate[], struct Date *date){
         yearStr[i] = inpDate[i+6];
     }
     yearStr[2] = inpDate[8];yearStr[3] = inpDate[9];
+    sprintf(&dateConcat,"%s%s%s",yearStr,monthStr,dayStr);
 
     date->year = atoi(yearStr);
     date->month = atoi(monthStr);
     date->day = atoi(dayStr);
-
+    date->dateConcat = atoi(dateConcat);
 }
 
 struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates){
     //Assign each event to a particular day of the trip
-    int numEvents = numFlights + numAccommodation;
+    int numEvents = numFlights + 2*numAccommodation;
     if(dates != NULL && numEvents>0){
         printf("Reallocate dates\n");
         dates = (struct Date*)realloc(dates,numEvents*sizeof(struct Date));
@@ -204,9 +209,22 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
     }
 
     if(numEvents > 0){
+        for(int i=0;i<numFlights;i++){
+            day2Date(pF[i].date,&dates[i]);
+            dates[i].eventID = pF[i].tag;
 
+        }
+
+        for(int i=0;i<2*numAccommodation;i+=2){
+            day2Date(pA[i].dateCI,&dates[i+numFlights]);
+            dates[i+numFlights].eventID = pA[i].tag;
+            day2Date(pA[i].dateCO,&dates[i+numFlights+1]);
+            dates[i+numFlights+1].eventID = pA[i].tag;
+        }
     }
-
+        for(int i=0;i<numEvents;i++){
+            printf("%d\t%d\n",dates[i].eventID,dates[i].dateConcat);
+        }
 
     return dates;
 }
@@ -357,7 +375,7 @@ struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommo
     scanf(" %s",pA[*numAccommodation-1].dateCO);
 
     (*eventID)++;
-    pA[*numAccommodation-1].tag = eventID;
+    pA[*numAccommodation-1].tag = *eventID;
 
     return pA;
 }
@@ -401,7 +419,7 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
 
     free(selectedAirport);
     (*eventID)++;
-    pF[*numFlights-1].tag = eventID;
+    pF[*numFlights-1].tag = *eventID;
 
     return pF;
 }
