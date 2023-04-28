@@ -17,6 +17,8 @@ struct Date {
     int day;
     int dateConcat;
     int eventID;
+    int dayOfTrip;
+    char description[200];
 };
 void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates);
 void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
@@ -106,8 +108,7 @@ int main()
 
     while(finish==0){
 
-        dispCurrentMenu(currentMenu);//day2Date("03/12/1998", dates);  //For testing
-        printf("%d\n",eventID);
+        dispCurrentMenu(currentMenu);
         printf("Press a to add item, w or s to navigate menu, p to print preview, q to print. Please Enter an Option:\n");
         scanf(" %c", &option);
         switch(option){
@@ -200,6 +201,7 @@ void day2Date(char inpDate[], struct Date *date){
 struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates){
     //Assign each event to a particular day of the trip
     int numEvents = numFlights + 2*numAccommodation, numSwaps=0, tempID, tempDate;
+    char tempDescription[200];
     if(dates != NULL && numEvents>0){
         printf("Reallocate dates\n");
         dates = (struct Date*)realloc(dates,numEvents*sizeof(struct Date));
@@ -212,8 +214,10 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
         for(int i=0;i<numFlights;i++){
             day2Date(pF[i].date,&dates[i]);
             dates[i].eventID = pF[i].tag;
-
+            sprintf(dates[i].description,"%s",pF[i].description);
+            printf("%s\n",dates[i].description);
         }
+
 
         for(int i=0;i<numAccommodation;i++){
             day2Date(pA[i].dateCI,&dates[i+numFlights]);
@@ -234,7 +238,6 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
             }
             if(dates[i].dateConcat>dates[i+1].dateConcat){
                 numSwaps++;
-                printf("i=%d. Swapped %d and %d\n",i,dates[i].dateConcat,dates[i+1].dateConcat);
                 tempDate = dates[i].dateConcat;
                 tempID = dates[i].eventID;
                 dates[i].dateConcat = dates[i+1].dateConcat;
@@ -243,11 +246,18 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
                 dates[i+1].eventID = tempID;
 
             }
-            printf("i==%d\n",i);
+
             i++;
         }while(1);
         for(int i=0;i<numEvents;i++){
-            printf("%d\t%d\n",dates[i].eventID,dates[i].dateConcat);
+
+            if(i==0){
+                dates[i].dayOfTrip = 1;
+            } else if(dates[i].dateConcat==dates[i-1].dateConcat){
+                dates[i].dayOfTrip = dates[i-1].dayOfTrip;
+            } else{
+                dates[i].dayOfTrip = dates[i].dateConcat-dates[i-1].dateConcat + dates[i-1].dayOfTrip;
+            }
         }
     }
 
@@ -305,6 +315,15 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
     //Itinerary
     printf("Itinerary\n");
     printf("-------------------\n");
+    for(int i=0;i<numFlights;i++){//Change this when sorting accommodation out
+        if(i==0||dates[i].dayOfTrip>dates[i-1].dayOfTrip){
+            printf("Day %d\n",i+1);
+            printf("----------\n");
+            printf("%s\n",dates[i].description);
+        } else{
+            printf("%s\n",dates[i].description);
+        }
+    }
 
 }
 
@@ -445,6 +464,7 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     free(selectedAirport);
     (*eventID)++;
     pF[*numFlights-1].tag = *eventID;
+    sprintf(pF[*numFlights-1].description,"(+)%s: Fly from %s to %s",pF[*numFlights-1].depTime,pF[*numFlights-1].depApt,pF[*numFlights-1].arrApt);
 
     return pF;
 }
