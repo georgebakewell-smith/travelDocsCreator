@@ -60,7 +60,7 @@ struct flight{
     char date[11];
     char airline[30];
     char flightNumber[20];
-    int day;
+    char description[200];
     int tag;
 };
 
@@ -69,8 +69,7 @@ struct accommodation{
     char name [30];
     char dateCI[11];
     char dateCO[11];
-    int dayCI;
-    int dayCO;
+    char description[200];
     int tag;
 
 };
@@ -167,6 +166,7 @@ int main()
     free(pA);
     free(pI);
     free(airports);
+    free(dates);
 
 
     return 0;
@@ -199,7 +199,7 @@ void day2Date(char inpDate[], struct Date *date){
 
 struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates){
     //Assign each event to a particular day of the trip
-    int numEvents = numFlights + 2*numAccommodation;
+    int numEvents = numFlights + 2*numAccommodation, numSwaps=0, tempID, tempDate;
     if(dates != NULL && numEvents>0){
         printf("Reallocate dates\n");
         dates = (struct Date*)realloc(dates,numEvents*sizeof(struct Date));
@@ -215,16 +215,41 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
 
         }
 
-        for(int i=0;i<2*numAccommodation;i+=2){
+        for(int i=0;i<numAccommodation;i++){
             day2Date(pA[i].dateCI,&dates[i+numFlights]);
             dates[i+numFlights].eventID = pA[i].tag;
-            day2Date(pA[i].dateCO,&dates[i+numFlights+1]);
-            dates[i+numFlights+1].eventID = pA[i].tag;
+            day2Date(pA[i].dateCO,&dates[i+numFlights+numAccommodation]);
+            dates[i+numFlights+numAccommodation].eventID = pA[i].tag;
         }
-    }
+
+        int i=0;
+        do{
+
+            if(i==numEvents-1){
+                i = 0;
+                if(numSwaps==0){
+                    break;
+                }
+                numSwaps = 0;
+            }
+            if(dates[i].dateConcat>dates[i+1].dateConcat){
+                numSwaps++;
+                printf("i=%d. Swapped %d and %d\n",i,dates[i].dateConcat,dates[i+1].dateConcat);
+                tempDate = dates[i].dateConcat;
+                tempID = dates[i].eventID;
+                dates[i].dateConcat = dates[i+1].dateConcat;
+                dates[i].eventID = dates[i+1].eventID;
+                dates[i+1].dateConcat = tempDate;
+                dates[i+1].eventID = tempID;
+
+            }
+            printf("i==%d\n",i);
+            i++;
+        }while(1);
         for(int i=0;i<numEvents;i++){
             printf("%d\t%d\n",dates[i].eventID,dates[i].dateConcat);
         }
+    }
 
     return dates;
 }
