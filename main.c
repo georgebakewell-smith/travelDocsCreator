@@ -21,7 +21,7 @@ struct Date {
     char description[200];
 };
 void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates);
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance);
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates);
 int length(char *arr);
 
 struct Date *allocateDays(struct flight*pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates);
@@ -156,7 +156,8 @@ int main()
 
             case 'q':
                 finish = 1;
-
+                dates = allocateDays(pF,pA,numFlights,numAccommodation,dates);
+                createDoc(pT, pF, pA, pI, numTravellers, numFlights, numAccommodation, numInsurance, dates);
                 break;
 
             default:
@@ -164,7 +165,7 @@ int main()
 
         }
     }
-    createDoc(pT, pF, pA, pI, numTravellers, numFlights, numAccommodation, numInsurance);
+
     free(pT);
     free(pF);
     free(pA);
@@ -206,10 +207,8 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
     int numEvents = numFlights + 2*numAccommodation, numSwaps=0, tempID, tempDate, tempMonth;
     char tempDescription[200];
     if(dates != NULL && numEvents>0){
-        printf("Reallocate dates\n");
         dates = (struct Date*)realloc(dates,numEvents*sizeof(struct Date));
     } else if(dates == NULL){
-        printf("Allocate dates\n");
         dates = (struct Date*)malloc(numEvents*sizeof(struct Date));
     }
 
@@ -218,7 +217,6 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
             day2Date(pF[i].date,&dates[i]);
             dates[i].eventID = pF[i].tag;
             sprintf(dates[i].description,"%s",pF[i].description);
-            printf("%s\n",dates[i].description);
         }
 
 
@@ -269,12 +267,8 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, int numFl
                 dates[i].dayOfTrip = dates[i-1].dayOfTrip;
             } else{
                 dates[i].dayOfTrip = (dates[i].dateConcat-dates[i-1].dateConcat)%(100-daysInMonths[dates[i-1].month-1]) + dates[i-1].dayOfTrip;
-                printf("%d\t%d\t%d\n",dates[i-1].month-1,dates[i].dateConcat-dates[i-1].dateConcat,daysInMonths[dates[i-1].month-1]);
             }
 
-        }
-        for(int i=0;i<numEvents;i++){
-            printf("day %d,date: %d\t%s, month: %d\n",dates[i].dayOfTrip,dates[i].dateConcat,dates[i].description,dates[i].month);
         }
     }
 
@@ -328,6 +322,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
     for(int i=0;i<numInsurance;i++){
         printf("%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
     }
+    printf("\n");
 
     //Itinerary
     printf("Itinerary\n");
@@ -347,7 +342,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
 
 }
 
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance){
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates){
     FILE *fp;
     char airportNames[93];
     fp = fopen("output.txt", "w"); // open the file in write mode
@@ -391,6 +386,23 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
     fprintf(fp,"%-30s%-30s%-25s\n\n","Name", "Policy Number", "Emergency Contact Number");
     for(int i=0;i<numInsurance;i++){
         fprintf(fp,"%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
+    }
+    fprintf(fp,"\n");
+
+    //Itinerary
+    fprintf(fp,"Itinerary\n");
+    fprintf(fp,"-------------------\n");
+    for(int i=0;i<numFlights+2*numAccommodation;i++){
+        if(i==0||dates[i].dayOfTrip>dates[i-1].dayOfTrip){
+            if(i>0){
+                fprintf(fp,"\n");
+            }
+            fprintf(fp,"Day %d\n",dates[i].dayOfTrip);
+            fprintf(fp,"----------\n");
+            fprintf(fp,"%s\n",dates[i].description);
+        } else{
+            fprintf(fp,"%s\n",dates[i].description);
+        }
     }
 
     fclose(fp);
