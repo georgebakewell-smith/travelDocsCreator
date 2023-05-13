@@ -29,6 +29,7 @@ int length(char *arr);
 struct Date *allocateDays(struct flight*pF, struct accommodation *pA, struct train *pS, int numFlights, int numAccommodation, int numTrains, struct Date *dates);
 
 void day2Date(char inpDate[], char inpTime[], struct Date *date);
+void freeTrain(struct train *pS, int numTrains);
 
 struct Airport{
     char name[60];
@@ -181,12 +182,23 @@ int main()
     free(pF);
     free(pA);
     free(pI);
-    free(pS);
+    freeTrain(pS,numTrains);
     free(airports);
     free(dates);
 
 
     return 0;
+}
+
+void freeTrain(struct train *pS, int numTrains){
+    for(int i=0;i<numTrains;i++){
+        for(int j=0;j<pS[i].numStops;j++){
+            free(pS[i].station[j]);
+            if(j<pS[i].numStops-1){free(pS[i].depTime[j]);}
+            free(pS[i].arrTime[j]);
+        }
+    }
+    free(pS);
 }
 
 void day2Date(char inpDate[], char inpTime[], struct Date *date){
