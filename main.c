@@ -22,7 +22,7 @@ struct Date{
     char description[200];
 };
 void printPreview(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, struct train *pS, int numTravellers, int numFlights, int numAccommodation, int numInsurance, int numTrains, struct Date *dates);
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates);
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, struct train *pS, int numTravellers, int numFlights, int numAccommodation, int numInsurance, int numTrains, struct Date *dates);
 int length(char *arr);
 
 struct Date *allocateDays(struct flight*pF, struct accommodation *pA, int numFlights, int numAccommodation, struct Date *dates);
@@ -131,9 +131,6 @@ int main()
                         pS = addTrain(pS,&numTrains);
 
                     }
-                    printf("%s\n",pS[0].station[0]);
-                    printf("%s\n",pS[0].station[1]);
-
                     break;
                 case 2:
                     pA = addAccommodation(pA, &numAccommodation, &eventID);
@@ -169,7 +166,7 @@ int main()
             case 'q':
                 finish = 1;
                 dates = allocateDays(pF,pA,numFlights,numAccommodation,dates);
-                createDoc(pT, pF, pA, pI, numTravellers, numFlights, numAccommodation, numInsurance, dates);
+                createDoc(pT, pF, pA, pI, pS, numTravellers, numFlights, numAccommodation, numInsurance, numTrains, dates);
                 break;
 
             default:
@@ -330,7 +327,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
         printf("Trains\n");
         printf("-------------------\n");
         for(int i=0;i<numTrains;i++){
-            printf("%-14s%-30s%-17s%-30s%-8s\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
+            printf("%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
             printf("%-14s%-30s%-17s%-30s%-8s\n",pS[i].date,pS[i].station[0],pS[i].depTime[0],pS[i].station[pS[i].numStops-1],pS[i].arrTime[pS[i].numStops-1]);
             if(pS[i].numStops>2){
                 printf("\tConnecting at:");
@@ -342,7 +339,6 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
         }
         printf("\n\n");
     }
-
 
     //Accommodation
     printf("Accommodation\n");
@@ -364,7 +360,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
 
     //Itinerary
     printf("Itinerary\n");
-    printf("-------------------\n");
+    printf("-------------------\n\n");
     for(int i=0;i<numFlights+2*numAccommodation;i++){
         if(i==0||dates[i].dayOfTrip>dates[i-1].dayOfTrip){
             if(i>0){
@@ -380,7 +376,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
 
 }
 
-void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, int numTravellers, int numFlights, int numAccommodation, int numInsurance, struct Date *dates){
+void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, struct train *pS, int numTravellers, int numFlights, int numAccommodation, int numInsurance, int numTrains, struct Date *dates){
     FILE *fp;
     char airportNames[93];
     fp = fopen("output.txt", "w"); // open the file in write mode
@@ -409,6 +405,24 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
     }
     fprintf(fp, "\n");
 
+    //Trains
+    if(numTrains != 0){
+        fprintf(fp,"Trains\n");
+        fprintf(fp,"-------------------\n");
+        for(int i=0;i<numTrains;i++){
+            fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
+            fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n",pS[i].date,pS[i].station[0],pS[i].depTime[0],pS[i].station[pS[i].numStops-1],pS[i].arrTime[pS[i].numStops-1]);
+            if(pS[i].numStops>2){
+                fprintf(fp,"\tConnecting at:");
+                for(int j=0;j<pS[i].numStops-2;j++){
+                    if(j!=0){fprintf(fp,",");}
+                    fprintf(fp,"\t%s",pS[i].station[j+1]);
+                }
+            }
+        }
+        fprintf(fp,"\n\n");
+    }
+
     //Accommodation
     fprintf(fp, "Accommodation\n");
     fprintf(fp, "-------------------\n");
@@ -429,7 +443,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
 
     //Itinerary
     fprintf(fp,"Itinerary\n");
-    fprintf(fp,"-------------------\n");
+    fprintf(fp,"-------------------\n\n");
     for(int i=0;i<numFlights+2*numAccommodation;i++){
         if(i==0||dates[i].dayOfTrip>dates[i-1].dayOfTrip){
             if(i>0){
@@ -503,6 +517,7 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     printf("Enter Flight Type (Outbound, Inbound, or Intermediate):\n");
     scanf(" %s",pF[*numFlights-1].type);
     printf("Departing Airport\n");
+    while (getchar() != '\n') {}
     searchAirport(airports, selectedAirport, numAirports);
     if(strcmp(selectedAirport->code,"\\N")==0){
         sprintf(pF[*numFlights-1].depApt,"%s (%s)",selectedAirport->name,selectedAirport->code2);
@@ -537,7 +552,6 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     (*eventID)++;
     pF[*numFlights-1].tag = *eventID;
     sprintf(pF[*numFlights-1].description,"(+) %s: Fly from %s to %s",pF[*numFlights-1].depTime,pF[*numFlights-1].depApt,pF[*numFlights-1].arrApt);
-
     return pF;
 }
 
@@ -596,7 +610,8 @@ struct traveller *addTraveller(struct traveller *pT, int *numTravellers){
 
     (*numTravellers)++;
     pT = realloc(pT,*numTravellers*sizeof(struct traveller));
-    printf("Enter traveller name:\n");
+    while (getchar() != '\n') {}
+    printf("Enter traveller Name:\n");
 
     // Read the name string
     fgets(pT[*numTravellers-1].name, 30, stdin);
@@ -675,7 +690,7 @@ void searchAirport(struct Airport *airports, struct Airport *selectedAirport, in
     char inpCity[40], input[10], menuDisplayLine[64];
     int airportCount = 0, satisfied = 0, airportSelection, inpCityLength;
     int *airportIndexArray = (int*)malloc((airportCount)*sizeof(int));
-    while (getchar() != '\n') {}
+
     while(satisfied != 1){
 
         printf("Enter some letters of City/Region\n");
