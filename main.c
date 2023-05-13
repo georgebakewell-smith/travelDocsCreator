@@ -16,6 +16,7 @@ struct Date{
     int year;
     int month;
     int day;
+    int time;
     int dateConcat;
     int eventID;
     int dayOfTrip;
@@ -27,7 +28,7 @@ int length(char *arr);
 
 struct Date *allocateDays(struct flight*pF, struct accommodation *pA, struct train *pS, int numFlights, int numAccommodation, int numTrains, struct Date *dates);
 
-void day2Date(char inpDate[], struct Date *date);
+void day2Date(char inpDate[], char inpTime[], struct Date *date);
 
 struct Airport{
     char name[60];
@@ -188,8 +189,8 @@ int main()
     return 0;
 }
 
-void day2Date(char inpDate[], struct Date *date){
-    char dateConcat[9];
+void day2Date(char inpDate[], char inpTime[], struct Date *date){
+    char dateConcat[11];
     char yearStr[5];
     char monthStr[3];
     char dayStr[3];
@@ -197,6 +198,7 @@ void day2Date(char inpDate[], struct Date *date){
     int year;
     int month;
     int day;
+    int time;
 
     for(int i=0;i<2;i++){
         dayStr[i] = inpDate[i];
@@ -204,11 +206,14 @@ void day2Date(char inpDate[], struct Date *date){
         yearStr[i] = inpDate[i+6];
     }
     yearStr[2] = inpDate[8];yearStr[3] = inpDate[9];
-    sprintf(&dateConcat,"%s%s%s",yearStr,monthStr,dayStr);
+
+    sprintf(dateConcat,"%s%s%s%c%c",yearStr ,monthStr, dayStr, inpTime[0], inpTime[1]);
 
     date->year = atoi(yearStr);
     date->month = atoi(monthStr);
     date->day = atoi(dayStr);
+    date->time = atoi(inpTime);
+
     date->dateConcat = atoi(dateConcat);
 }
 
@@ -224,23 +229,23 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, struct tr
 
     if(numEvents > 0){
         for(int i=0;i<numFlights;i++){
-            day2Date(pF[i].date,&dates[i]);
+            day2Date(pF[i].date, pF[i].depTime,&dates[i]);
             dates[i].eventID = pF[i].tag;
             sprintf(dates[i].description,"%s",pF[i].description);
         }
 
 
         for(int i=0;i<numAccommodation;i++){
-            day2Date(pA[i].dateCI,&dates[i+numFlights]);
+            day2Date(pA[i].dateCI, "9999",&dates[i+numFlights]);
             dates[i+numFlights].eventID = pA[i].tag;
             sprintf(dates[i+numFlights].description,"%s",pA[i].descriptionCI);
-            day2Date(pA[i].dateCO,&dates[i+numFlights+numAccommodation]);
+            day2Date(pA[i].dateCO,"0000" ,&dates[i+numFlights+numAccommodation]);
             dates[i+numFlights+numAccommodation].eventID = pA[i].tag;
             sprintf(dates[i+numFlights+numAccommodation].description,"%s",pA[i].descriptionCO);
         }
 
         for(int i=0;i<numTrains;i++){
-            day2Date(pS[i].date, &dates[i+numFlights+2*numAccommodation]);
+            day2Date(pS[i].date,pS[i].depTime[0] ,&dates[i+numFlights+2*numAccommodation]);
             dates[i+numFlights+2*numAccommodation].eventID = pS[i].tag;
             sprintf(dates[i+numFlights+2*numAccommodation].description,"%s",pS[i].description);
         }
@@ -282,13 +287,12 @@ struct Date *allocateDays(struct flight *pF, struct accommodation *pA, struct tr
         }while(1);
 
         for(int i=0;i<numEvents;i++){
-
             if(i==0){
                 dates[i].dayOfTrip = 1;
-            } else if(dates[i].dateConcat==dates[i-1].dateConcat){
+            } else if(dates[i].dateConcat/100==dates[i-1].dateConcat/100){
                 dates[i].dayOfTrip = dates[i-1].dayOfTrip;
             } else{
-                dates[i].dayOfTrip = (dates[i].dateConcat-dates[i-1].dateConcat)%(100-daysInMonths[dates[i-1].month-1]) + dates[i-1].dayOfTrip;
+                dates[i].dayOfTrip = (dates[i].dateConcat/100-dates[i-1].dateConcat/100)%(100-daysInMonths[dates[i-1].month-1]) + dates[i-1].dayOfTrip;
             }
         }
     }
@@ -314,7 +318,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
         printf("%-30s%-6d%-18s%-30s\n", pT[i].name, pT[i].age,pT[i].phoneNumber, pT[i].passportNumber); // write the string to the screen
 
     }
-    printf("\n");
+    printf("\n\n");
 
     //Flights
     printf("Flights\n");
@@ -324,14 +328,14 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
         sprintf(airportNames,"%s -> %s",pF[i].depApt,pF[i].arrApt);
         printf("%-14s%-93s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, airportNames, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
     }
-    printf("\n");
+    printf("\n\n");
 
     //Trains
     if(numTrains != 0){
         printf("Trains\n");
         printf("-------------------\n");
+        printf("%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
         for(int i=0;i<numTrains;i++){
-            printf("%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
             printf("%-14s%-30s%-17s%-30s%-8s\n",pS[i].date,pS[i].station[0],pS[i].depTime[0],pS[i].station[pS[i].numStops-1],pS[i].arrTime[pS[i].numStops-1]);
             if(pS[i].numStops>2){
                 printf("\tConnecting at:");
@@ -339,6 +343,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
                     if(j!=0){printf(",");}
                     printf("\t%s",pS[i].station[j+1]);
                 }
+                printf("\n");
             }
         }
         printf("\n\n");
@@ -352,6 +357,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
         printf("%s\n", pA[i].address);
         printf("%s - %s\n\n", pA[i].dateCI, pA[i].dateCO);
     }
+    printf("\n");
 
     //Travel Insurance
     printf("Travel Insurance\n");
@@ -360,7 +366,7 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
     for(int i=0;i<numInsurance;i++){
         printf("%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
     }
-    printf("\n");
+    printf("\n\n");
 
     //Itinerary
     printf("Itinerary\n");
@@ -397,7 +403,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
         fprintf(fp, "%-30s%-6d%-18s%-30s\n", pT[i].name, pT[i].age,pT[i].phoneNumber, pT[i].passportNumber); // write the string to the file
 
     }
-    fprintf(fp, "\n");
+    fprintf(fp, "\n\n");
 
     //Flights
     fprintf(fp, "Flights\n");
@@ -407,14 +413,14 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
         sprintf(airportNames,"%s -> %s",pF[i].depApt,pF[i].arrApt);
         fprintf(fp, "%-14s%-93s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, airportNames, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
     }
-    fprintf(fp, "\n");
+    fprintf(fp, "\n\n");
 
     //Trains
     if(numTrains != 0){
         fprintf(fp,"Trains\n");
         fprintf(fp,"-------------------\n");
+        fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
         for(int i=0;i<numTrains;i++){
-            fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
             fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n",pS[i].date,pS[i].station[0],pS[i].depTime[0],pS[i].station[pS[i].numStops-1],pS[i].arrTime[pS[i].numStops-1]);
             if(pS[i].numStops>2){
                 fprintf(fp,"\tConnecting at:");
@@ -422,6 +428,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
                     if(j!=0){fprintf(fp,",");}
                     fprintf(fp,"\t%s",pS[i].station[j+1]);
                 }
+                fprintf(fp, "\n");
             }
         }
         fprintf(fp,"\n\n");
@@ -435,6 +442,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
         fprintf(fp, "%s\n", pA[i].address);
         fprintf(fp,"%s - %s\n\n", pA[i].dateCI, pA[i].dateCO);
     }
+    fprintf(fp,"\n");
 
     //Travel Insurance
     fprintf(fp, "Travel Insurance\n");
@@ -443,7 +451,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
     for(int i=0;i<numInsurance;i++){
         fprintf(fp,"%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
     }
-    fprintf(fp,"\n");
+    fprintf(fp,"\n\n");
 
     //Itinerary
     fprintf(fp,"Itinerary\n");
@@ -555,7 +563,7 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     free(selectedAirport);
     (*eventID)++;
     pF[*numFlights-1].tag = *eventID;
-    sprintf(pF[*numFlights-1].description,"(+) %s: Fly from %s to %s",pF[*numFlights-1].depTime,pF[*numFlights-1].depApt,pF[*numFlights-1].arrApt);
+    sprintf(pF[*numFlights-1].description,"(+) %s flight from %s to %s",pF[*numFlights-1].depTime,pF[*numFlights-1].depApt,pF[*numFlights-1].arrApt);
     return pF;
 }
 
