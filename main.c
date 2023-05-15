@@ -473,7 +473,7 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
             if(i>0){
                 fprintf(fp,"\n");
             }
-            fprintf(fp,"Day %d\n",dates[i].dayOfTrip);
+            fprintf(fp,"Day %d - %d/%d\n",dates[i].dayOfTrip,dates[i].day,dates[i].month);
             fprintf(fp,"----------\n");
             fprintf(fp,"%s\n",dates[i].description);
         } else{
