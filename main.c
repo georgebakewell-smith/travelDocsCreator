@@ -58,8 +58,8 @@ struct traveller{
 
 struct flight{
     char type[13];
-    char depApt[44];
-    char arrApt[44];
+    char depApt[60];
+    char arrApt[60];
     char depTime[5];
     char arrTime[5];
     char date[11];
@@ -142,24 +142,24 @@ int main()
                     pI = addInsurance(pI, &numInsurance);
                     break;
                 }
-                //system("cls");
+                system("clear");
                 break;
             case 'w':
                 currentMenu -= 1;
                 if(currentMenu==-1){
                     currentMenu = 3;
                 }
-                system("cls");
+                system("clear");
                 break;
             case 's':
                 currentMenu += 1;
                 if(currentMenu==4){
                     currentMenu = 0;
                 }
-                system("cls");
+                system("clear");
                 break;
             case 'p':
-                system("cls");
+                system("clear");
                 dates = allocateDays(pF,pA,pS,numFlights,numAccommodation, numTrains,dates);
                 printPreview(pT, pF, pA, pI, pS, numTravellers, numFlights, numAccommodation, numInsurance, numTrains, dates);
                 printf("\n\nEnter any character to continue:\n");
