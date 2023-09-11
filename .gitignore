@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Filenames
+main
+
 # Object files
 *.o
 *.ko
