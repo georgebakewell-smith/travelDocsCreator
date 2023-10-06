@@ -72,7 +72,7 @@ struct flight{
 
 struct accommodation{
     char address[100];
-    char name [30];
+    char name [60];
     char dateCI[11];
     char dateCO[11];
     char descriptionCI[200];
@@ -87,7 +87,7 @@ struct insurance{
     char number[18];
 };
 
-const daysInMonths[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+const int daysInMonths[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 
 int main()
 {
@@ -516,7 +516,7 @@ struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommo
     while ((c = getchar()) != '\n' && c != EOF){ }
 
     // Read the name string
-    fgets(pA[*numAccommodation-1].name, 30, stdin);
+    fgets(pA[*numAccommodation-1].name, 60, stdin);
     pA[*numAccommodation-1].name[length(pA[*numAccommodation-1].name)] = '\0';  //Replace '\n' with terminator '\0'
     printf("Enter Address, with each line separated by a comma:\n");
     // Read the name string
