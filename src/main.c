@@ -659,7 +659,7 @@ struct traveller *addTraveller(struct traveller *pT, int *numTravellers){
 
 void loadData(struct Airport *airports, int numAirports){
     FILE *fp;
-    char filename[] = "airports.txt";
+    char filename[] = "./assets/airports.txt";
     char line[500];
 
 
