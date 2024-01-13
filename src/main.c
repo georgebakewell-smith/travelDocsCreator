@@ -402,37 +402,38 @@ void printPreview(struct traveller *pT, struct flight *pF, struct accommodation 
 void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA, struct insurance *pI, struct train *pS, int numTravellers, int numFlights, int numAccommodation, int numInsurance, int numTrains, struct Date *dates){
     FILE *fp;
     char airportNames[93];
-    fp = fopen("output.txt", "w"); // open the file in write mode
+    fp = fopen("output.md", "w"); // open the file in write mode
 
     if (fp == NULL) { // error checking
         printf("Error opening file\n");
         exit(1);
     }
     //Travellers
-    fprintf(fp, "Travellers\n");
-    fprintf(fp, "-------------------\n");
-    fprintf(fp, "%-30s%-6s%-18s%-30s\n\n", "Name", "Age", "Phone Number", "Passport Number");
+    fprintf(fp, "#Travellers\n");
+    
+    fprintf(fp, "%-30s%-6s%-18s%-30s\n\n", "##Name", "Age", "Phone Number", "Passport Number");
     for(int i=0;i<numTravellers;i++){
         fprintf(fp, "%-30s%-6d%-18s%-30s\n", pT[i].name, pT[i].age,pT[i].phoneNumber, pT[i].passportNumber); // write the string to the file
 
     }
     fprintf(fp, "\n\n");
+    fprintf(fp, "---\n");
 
     //Flights
-    fprintf(fp, "Flights\n");
-    fprintf(fp, "-------------------\n");
-    fprintf(fp,"%-14s%-93s%-13s%-13s%-30s%-20s\n\n","Type", "Airport", "Time", "Date", "Airline", "Flight Number");
+    fprintf(fp, "#Flights\n");
+    fprintf(fp,"%-14s%-93s%-13s%-13s%-30s%-20s\n\n","##Type", "Airport", "Time", "Date", "Airline", "Flight Number");
     for(int i=0;i<numFlights;i++){
         sprintf(airportNames,"%s -> %s",pF[i].depApt,pF[i].arrApt);
         fprintf(fp, "%-14s%-93s%s->%-7s%-13s%-30s%-20s\n", pF[i].type, airportNames, pF[i].depTime,pF[i].arrTime, pF[i].date, pF[i].airline, pF[i].flightNumber);
     }
     fprintf(fp, "\n\n");
+    fprintf(fp, "---\n");
 
     //Trains
     if(numTrains != 0){
-        fprintf(fp,"Trains\n");
-        fprintf(fp,"-------------------\n");
-        fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n\n","Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
+        fprintf(fp,"#Trains\n");
+        
+        fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n\n","##Date","Departing Station","Departing Time","Arrival Station","Arrival Time");
         for(int i=0;i<numTrains;i++){
             fprintf(fp,"%-14s%-30s%-17s%-30s%-8s\n",pS[i].date,pS[i].station[0],pS[i].depTime[0],pS[i].station[pS[i].numStops-1],pS[i].arrTime[pS[i].numStops-1]);
             if(pS[i].numStops>2){
@@ -445,40 +446,42 @@ void createDoc(struct traveller *pT, struct flight *pF, struct accommodation *pA
             }
         }
         fprintf(fp,"\n\n");
+        fprintf(fp, "---\n");
     }
+    
 
     //Accommodation
-    fprintf(fp, "Accommodation\n");
-    fprintf(fp, "-------------------\n");
+    fprintf(fp, "#Accommodation\n");
     for(int i=0;i<numAccommodation;i++){
         fprintf(fp, "%s\n", pA[i].name); // write the string to the file
         fprintf(fp, "%s\n", pA[i].address);
         fprintf(fp,"%s - %s\n\n", pA[i].dateCI, pA[i].dateCO);
     }
     fprintf(fp,"\n");
+    fprintf(fp, "---\n");
 
     //Travel Insurance
-    fprintf(fp, "Travel Insurance\n");
-    fprintf(fp, "-------------------\n");
-    fprintf(fp,"%-30s%-30s%-25s\n\n","Name", "Policy Number", "Emergency Contact Number");
+    fprintf(fp, "#Travel Insurance\n");
+    fprintf(fp,"%-30s%-30s%-25s\n\n","##Name", "Policy Number", "Emergency Contact Number");
     for(int i=0;i<numInsurance;i++){
         fprintf(fp,"%-30s%-30s%-25s\n",pI[i].name,pI[i].reference,pI[i].number);
     }
     fprintf(fp,"\n\n");
+    fprintf(fp, "---\n");
 
     //Itinerary
-    fprintf(fp,"Itinerary\n");
-    fprintf(fp,"-------------------\n\n");
+    fprintf(fp,"#Itinerary\n");
     for(int i=0;i<numFlights+2*numAccommodation+numTrains;i++){
         if(i==0||dates[i].dayOfTrip>dates[i-1].dayOfTrip){
             if(i>0){
                 fprintf(fp,"\n");
+                fprintf(fp,"---\n");
             }
-            fprintf(fp,"Day %d - %d/%d\n",dates[i].dayOfTrip,dates[i].day,dates[i].month);
-            fprintf(fp,"----------\n");
-            fprintf(fp,"%s\n",dates[i].description);
+            fprintf(fp,"##Day %d - %d/%d\n",dates[i].dayOfTrip,dates[i].day,dates[i].month);
+            
+            fprintf(fp,"* %s\n",dates[i].description);
         } else{
-            fprintf(fp,"%s\n",dates[i].description);
+            fprintf(fp,"* %s\n",dates[i].description);
         }
     }
 
@@ -529,8 +532,8 @@ struct accommodation *addAccommodation(struct accommodation *pA, int *numAccommo
 
     (*eventID)++;
     pA[*numAccommodation-1].tag = *eventID;
-    sprintf(pA[*numAccommodation-1].descriptionCI,"(+) Check in to %s",pA[*numAccommodation-1].name);
-    sprintf(pA[*numAccommodation-1].descriptionCO,"(+) Check out of %s",pA[*numAccommodation-1].name);
+    sprintf(pA[*numAccommodation-1].descriptionCI,"Check in to %s",pA[*numAccommodation-1].name);
+    sprintf(pA[*numAccommodation-1].descriptionCO,"Check out of %s",pA[*numAccommodation-1].name);
 
     return pA;
 }
@@ -576,7 +579,7 @@ struct flight *addFlight(struct flight *pF, int *numFlights, struct Airport *air
     free(selectedAirport);
     (*eventID)++;
     pF[*numFlights-1].tag = *eventID;
-    sprintf(pF[*numFlights-1].description,"(+) %s flight from %s to %s",pF[*numFlights-1].depTime,pF[*numFlights-1].depApt,pF[*numFlights-1].arrApt);
+    sprintf(pF[*numFlights-1].description,"%s flight from %s to %s",pF[*numFlights-1].depTime,pF[*numFlights-1].depApt,pF[*numFlights-1].arrApt);
     return pF;
 }
 
@@ -631,7 +634,7 @@ struct train *addTrain(struct train *pS,int *numTrains, int *eventID){
 
     (*eventID)++;
     pS[*numTrains-1].tag = *eventID;
-    sprintf(pS[*numTrains-1].description,"(+) %s Train from %s to %s",pS[*numTrains-1].depTime[0],pS[*numTrains-1].station[0],pS[*numTrains-1].station[numStops+1]);
+    sprintf(pS[*numTrains-1].description,"%s Train from %s to %s",pS[*numTrains-1].depTime[0],pS[*numTrains-1].station[0],pS[*numTrains-1].station[numStops+1]);
 
     return pS;
 }
